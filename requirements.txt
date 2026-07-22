@@ -1,3 +1,4 @@
+streamlit
 # utilities
 numpy
 pandas
@@ -16,7 +17,6 @@ bcrypt
 segno
 pillow                                                                                                                                                                                                                                                                  
 
-streamlit
 
 # Optional audio/voice backend dependencies.
 # Install separately on supported systems if voice features are needed.
