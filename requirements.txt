@@ -1,0 +1,24 @@
+# utilities
+numpy
+pandas
+
+# face-recognition
+scikit-learn
+dlib-bin
+git+https://github.com/ageitgey/face_recognition_models
+# Required because some face-recognition dependency installation/import paths require pkg_resources.
+# Pin a setuptools version that still provides pkg_resources for the dlib/face_recognition_models stack.
+setuptools==70.0.0
+
+supabase
+bcrypt
+
+segno
+pillow                                                                                                                                                                                                                                                                  
+
+streamlit
+
+# Optional audio/voice backend dependencies.
+# Install separately on supported systems if voice features are needed.
+# On Windows/Python 3.13, some audio backends may fail to build.
+# The app can still run without these packages.
