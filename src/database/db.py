@@ -3,6 +3,32 @@ from src.database.config import supabase, SUPABASE_URL
 import bcrypt
 
 
+def _normalize_attendance_rows(rows):
+    if rows is None:
+        return []
+
+    if isinstance(rows, dict):
+        rows = [rows]
+
+    normalized = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        item = dict(row)
+        if "is_present" in item and item["is_present"] is None:
+            item.pop("is_present")
+        normalized.append(item)
+    return normalized
+
+
+def _prepare_attendance_payload(rows):
+    payload = _normalize_attendance_rows(rows)
+    return [
+        {key: value for key, value in row.items() if key in {"student_id", "subject_id", "time_stamp", "created_at"} or key == "is_present"}
+        for row in payload
+    ]
+
+
 def _raise_supabase_auth_error(exc):
     raise RuntimeError(
         "Supabase authentication failed: check that SUPABASE_URL and SUPABASE_SECRET_KEY belong to the same project and are not stale or mismatched. "
@@ -110,8 +136,21 @@ def get_student_attendance(student_id):
 
 
 def create_attendance(logs):
-    response = _execute_supabase(lambda: supabase.table('attendance_logs').insert(logs).execute())
-    return response.data
+    payload = _prepare_attendance_payload(logs)
+
+    try:
+        response = _execute_supabase(lambda: supabase.table('attendance_logs').insert(payload).execute())
+        return response.data
+    except Exception as exc:
+        message = str(exc)
+        if "is_present" in message and "column" in message.lower():
+            fallback_payload = [
+                {key: value for key, value in row.items() if key != "is_present"}
+                for row in payload
+            ]
+            response = _execute_supabase(lambda: supabase.table('attendance_logs').insert(fallback_payload).execute())
+            return response.data
+        raise
 
 
 def get_attendance_for_teacher(teacher_id):
